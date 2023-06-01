@@ -1,0 +1,249 @@
+import React from 'react'
+import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import Spinner from '../../components/Spinner'
+import {viewAllCourses,reset,registerCourse,viewAllCoursesFiltered,rateCourses} from '../../features/individualTrainee/individualTraineeSlice'
+import {updateUserInfo} from '../../features/auth/authSlice'
+
+
+function ViewCourses() {
+
+
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+
+    
+    const [filtering,setFiltering] = useState(false)
+    const [flickering,setFlickering] = useState(false)
+
+
+    const [formData, setFormData] = useState({
+        subject: '',
+        startPrice: null,
+        endPrice: null,
+        startRate:null,
+        endRate:null,
+      })
+
+  const { subject,startPrice, endPrice ,startRate , endRate} = formData
+
+    const { user } = useSelector(
+        (state) => state.auth
+    )
+
+    const {  isLoading, isError, message, courses ,isSuccess} = useSelector(
+        (state) => state.individualTrainee
+    )
+
+    useEffect(() => {
+        if (isError) {
+            toast.error(message)
+        }
+
+        if (!user) {
+            navigate('/login')
+        }
+
+        // dispatch(viewMyCourses())
+
+        if (isSuccess) {
+            toast.success(message)
+        }
+
+        if(!filtering){
+            dispatch(viewAllCourses())
+            }else{
+                dispatch(viewAllCoursesFiltered({
+                    subject:subject,
+                    startPrice:startPrice,
+                    endPrice:endPrice,
+                    startRate:startRate,
+                    endRate:endRate,
+                }
+                ))
+            }
+
+
+        return () => {
+            dispatch(reset())
+        }
+}, [user, navigate, dispatch,isError,message,filtering,flickering])
+
+
+async function registerCourseClick(courseID) {
+    await dispatch(registerCourse({
+        courseID:courseID,
+    }))
+
+    await dispatch(updateUserInfo(1))
+
+
+}
+
+function rateCourseClick(course_id) {
+  dispatch(
+    rateCourses({
+      course_id: course_id,
+      newRating: rating,
+    })
+  );
+}
+
+const [rating, setRating] = useState(0);
+
+
+function filterCoursesClick(){
+    if(subject==='' && (startPrice === null || startPrice === '') && (endPrice ===null || endPrice === '') 
+    && (startRate ===null || startRate === '') && (endRate ===null || endRate === '')){
+    dispatch(viewAllCourses())
+    }else{
+        setFlickering(prev=> !prev)
+        setFiltering(true)
+    }
+}
+
+const onChange = (e) => {
+    const {name, value, type, checked} = e.target
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: type === "checkbox" ? checked : value
+
+    })) 
+  }
+
+  function removeFiltersClick(){
+    setFormData({
+    subject: '',
+    startPrice: null,
+    endPrice: null,
+    startRate:null,
+    endRate:null,
+    })
+    dispatch(viewAllCourses())
+}
+
+
+
+
+const coursesList = courses.map(c => {
+    var alreadyRegistered = false
+    for(let i =0;i<user.registeredCourses.length;i++){
+        if(user.registeredCourses[i]==c._id){
+            alreadyRegistered= true
+            break
+        }
+    }
+
+    var number = 0;
+  for (let i = 0; i < c.rating.length; i++) {
+    number = number + parseInt(c.rating[i], 10);
+  }
+  number = Math.round((number / c.rating.length) * 10) / 10;
+  
+    return (
+    <div key={c._id}>
+    -------------------------------------
+    <h2>Title: {c.title}</h2>
+    <h2>Hours: {c.hours}</h2>
+    <h2>Rating:{number}</h2>
+    <h2>Price:{c.price}</h2>
+    {!alreadyRegistered && (<button className='btn' onClick={() => {registerCourseClick(c._id)}}> Register to this course </button>)}
+    {alreadyRegistered && (<h3>You are registered to this course</h3>)}
+    <br/>
+    </div>
+    )
+})
+
+// const examsDisplay = exams.map(q => {
+//     return (
+//         <div key={q.number}>
+//         </div>
+//     )
+// })
+
+
+
+    if(isLoading)
+        return <Spinner/>
+
+  return (
+    <>
+    <div class='box-form' style={{width:'1500px'}}>
+    <h1>Here is a list of all available courses: </h1>
+    <label>Subject:</label>
+            <div className='form-group'>
+            <input
+              type='text'
+              className='form-control'
+              id='subject'
+              name='subject'
+              value={subject}
+              placeholder='Subject'
+              onChange={onChange}
+            />
+          </div>
+          <label>Minimum Price: </label>
+          <div className='form-group'>
+            <input
+              type='number'
+              className='form-control'
+              id='startPrice'
+              name='startPrice'
+              value={startPrice}
+              placeholder='Free'
+              onChange={onChange}
+            />
+          </div>
+          <label>Maximum Price: </label>
+          <div className='form-group'>
+            <input
+              type='text'
+              className='form-control'
+              id='endPrice'
+              name='endPrice'
+              value={endPrice}
+              placeholder='No upper bound'
+              onChange={onChange}
+            />  
+          </div>
+          <label>Minimum Rate: </label>
+          <div className='form-group'>
+            <input
+              type='number'
+              className='form-control'
+              id='startRate'
+              name='startRate'
+              value={startRate}
+              placeholder='Min rate'
+              onChange={onChange}
+            />
+          </div>
+          <label>Maximum Rate: </label>
+          <div className='form-group'>
+            <input
+              type='text'
+              className='form-control'
+              id='endRate'
+              name='endRate'
+              value={endRate}
+              placeholder='Max rate'
+              onChange={onChange}
+            />  
+          </div>
+
+          <button className='btn' onClick={filterCoursesClick}>
+              Filter
+            </button>
+            <button className='btn' onClick={removeFiltersClick}>
+              Remove filters
+            </button>
+
+    {coursesList}
+    </div>
+    </>
+  )
+}
+
+export default ViewCourses

@@ -1,0 +1,42 @@
+{
+  "name": "acl_tasks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "start": "node backend/src/App.js",
+    "server": "nodemon backend/src/App.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\" "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Advanced-Computer-Lab-2022/Task_1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Advanced-Computer-Lab-2022/Task_1/issues"
+  },
+  "homepage": "https://github.com/Advanced-Computer-Lab-2022",
+  "dependencies": {
+    "@stripe/react-stripe-js": "^1.16.1",
+    "@stripe/stripe-js": "^1.46.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.0",
+    "jspdf": "^2.5.1",
+    "mongoose": "^6.0.11",
+    "nodemailer": "^6.9.0",
+    "nodemon": "^2.0.20",
+    "Router": "^2.1.0",
+    "stripe": "^11.5.0"
+  },
+  "devDependencies": {
+    "concurrently": "^7.5.0"
+  }
+}
